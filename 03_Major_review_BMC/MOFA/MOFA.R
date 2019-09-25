@@ -2,6 +2,7 @@ library(reticulate)
 # Using a specific python binary
 use_python("C:/Users/acsala/AppData/Local/Programs/Python/Python37/python.exe", required = TRUE)
 
+# https://bioconductor.org/packages/release/bioc/html/MOFA.html
 library(MOFAdata)
 library(MOFA)
 #data("CLL_data")
