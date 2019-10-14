@@ -103,19 +103,78 @@ X[,i] %*% Y[,j] / (dim(X)[1]-1)
 
 lm(Y[,j]~X[,i])
 
+
 #univariable plot####
 
 pdf("Univariate_plot_1.pdf") 
 
 plot(X[,i],Y[,j],
-     xlab = colnames(X)[i],
-     ylab = colnames(Y)[j])
+     xlab = paste0("Methylation site: ",colnames(X)[i]),
+     ylab = paste0("Gene expression: ",colnames(Y)[j]))
 
-abline(lm(Y[,j]~X[,i]) )
+abline(lm(Y[,j]~X[,i]))
+
+text(X[,i],Y[,j],
+     #labels=names(Xi1), 
+     labels=1:length(X[,i]),
+     cex= 1, pos=4)
 
 dev.off()
 
-# Multivariable
+
+pdf("Univariate_plot_3.pdf") 
+
+par(mfrow=c(3,4))
+
+for(which_x in 1:24){
+  
+  plot(X[,which_x],Y[,j],
+       xlab = colnames(X)[which_x],
+       ylab = colnames(Y)[j])
+  
+  abline(lm(Y[,j]~X[,which_x]) )
+  
+}
+
+dev.off()
+
+par(mfrow=c(1,1))
+
+## GGPlot example with labels ####
+pdf("try.pdf") 
+library(ggrepel)
+set.seed(42)
+
+dat <- subset(mtcars, wt > 2.75 & wt < 3.45)
+dat$car <- rownames(dat)
+
+p <- ggplot(dat, aes(wt, mpg, label = car)) +
+  geom_point(color = "red")
+
+p1 <- p + geom_text() + labs(title = "geom_text()")
+
+p2 <- p + geom_text_repel() + labs(title = "geom_text_repel()") + theme_classic()
+
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+
+
+set.seed(42)
+
+dat2 <- subset(mtcars, wt > 3 & wt < 4)
+# Hide all of the text labels.
+dat2$car <- ""
+# Let's just label these items.
+ix_label <- c(2,3,16)
+dat2$car[ix_label] <- rownames(dat2)[ix_label]
+
+ggplot(dat2, aes(wt, mpg, label = car)) +
+  geom_point(color = ifelse(dat2$car == "", "grey50", "red")) +
+  geom_text_repel()
+
+dev.off()
+##
+
+# Multivariable ######
 
 i <- 1:3
 j <- 1
@@ -137,13 +196,14 @@ coefs <- solve(var(X[,i])) %*% t(X[,i]) %*% Y[,j] / (dim(X)[1]-1)
 coefs
 
 lm_model <- lm(Y[,j]~X[,i])
+summary(lm_model)
 
 Y_hat <- X[,i] %*% coefs
 
-Y[,j] - Y_hat
-
 Y_hat
 predict(lm_model)
+
+X[1,i] %*% coefs
 
 #multivariable plot####
 
@@ -157,6 +217,11 @@ for (vars in 1:dim(X[,i])[2]){
   points(X[,vars],Y[,j], col = vars)
   abline(lm(Y[,j] ~ X[,vars]), col = vars)
   
+  # text(X[,vars],Y[,j],
+  #      #labels=names(Xi1), 
+  #      labels=names(X[,vars]),
+  #      cex= 1, pos=4)
+  
 }
 
 legend("topleft", legend=colnames(X)[i],
@@ -165,6 +230,23 @@ legend("topleft", legend=colnames(X)[i],
        #lty=1:2, 
        cex=0.8)
   
+abline(Y_hat,Y[,j], lwd = 2)
+
+dev.off()
+
+
+pdf("multivariable_plot_2.pdf") 
+plot(Y_hat,Y[,j],
+     xlim = c(-2,2),
+     ylim = c(-2,2),
+     xlab = "Cpg sites",
+     ylab = colnames(Y)[j])
+
+text(Y_hat,Y[,j],
+     #labels=names(Xi1),
+     labels=names(Y[,j]),
+     cex= 1, pos=4)
+
 abline(Y_hat,Y[,j], lwd = 2)
 
 dev.off()
@@ -189,7 +271,7 @@ library(sPLSPM)
 time_data <- system.time(
   s_satpls2 <- splspm(data_sets, sat.inner, sat.outer, sat.mod, scheme="path",
                       scaled=T, penalization = "ust", 
-                      nonzero = c(37,37), lambda = 1,
+                      nonzero = c(10,10), lambda = 1,
                       cross_validate = F)
 )
 
@@ -216,7 +298,7 @@ pdf("CCA_LV_plot_1.pdf")
 
 plot(1, 
      type="n", 
-     xlab=colnames(s_satpls2$scores)[1], 
+     xlab=paste0("Linear combination of the methylaton sites"), 
      ylab=colnames(s_satpls2$scores)[2], 
      xlim=c(-3,3), 
      ylim=c(-3,3), 
@@ -263,7 +345,8 @@ dev.off()
 
 
 
-
+# print data we found with CCA #####
+library(xtable)
 nonzero_METHYL      <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2]=="METHYL"),]
 nonzero_EXPRESSION  <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2]=="EXPRES"),]
 
@@ -271,13 +354,27 @@ plot_METHYL_alphas <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2]=="ME
 plot_METHYL_alphas <- plot_METHYL_alphas[which(plot_METHYL_alphas[,3]!=0),][,c(1,3)]
 plot_METHYL_alphas[]
 
+plot_METHYL_betas <- s_satpls2$crossloadings[which(s_satpls2$crossloadings[,2] == "METHYL"),]
+plot_METHYL_betas <- plot_METHY_betas[which(nonzero_METHYL[,3]!=0),]
+plot_METHYL_betas
+
+
+plot_EXPRESSION_alphas <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2]=="EXPRES"),]
+plot_EXPRESSION_alphas <- plot_EXPRESSION_alphas[which(plot_EXPRESSION_alphas[,3]!=0),][,c(1,3)]
+plot_EXPRESSION_alphas
+
 plot_EXPRESSION_betas <- s_satpls2$crossloadings[which(s_satpls2$crossloadings[,2] == "EXPRES"),]
 plot_EXPRESSION_betas <- plot_EXPRESSION_betas[which(nonzero_EXPRESSION[,3]!=0),]
 plot_EXPRESSION_betas
 
+cbind(as.character(plot_EXPRESSION_betas[,"name"]), format(plot_METHYL_betas[,"EXPRES"], digits = 2),
+as.character(plot_METHY_betas[,"name"]), format(plot_EXPRESSION_betas[, "METHYL"], digits = 2))
 
-
-
+print(
+  xtable(cbind(as.character(plot_METHYL_betas[,"name"]), format(plot_METHYL_betas[,"EXPRES"], digits = 2),
+               as.character(plot_EXPRESSION_betas[,"name"]), format(plot_EXPRESSION_betas[, "METHYL"], digits = 2)), 
+         type = "latex", digits = 2), 
+  include.rownames=FALSE)
 
 
 
