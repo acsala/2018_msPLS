@@ -106,35 +106,102 @@ lm(Y[,j]~X[,i])
 
 #univariable plot####
 
-pdf("Univariate_plot_1.pdf") 
+plotting_function <- function(lim_x = c(-3,3),
+                              lim_y = c(-3,3),
+                              x_name = "x axis",
+                              y_name = "y axis",
+                              main_name = "main"){
+  
+  
+  plot(1, 
+       main = main_name,
+       type="n", 
+       xlab=paste0(x_name), 
+       ylab=paste0(y_name), 
+       xlim=lim_x, 
+       ylim=lim_y, 
+       xaxt = "n",
+       yaxt = "n",
+       bty = "n")
+  
+  
+  # legend("topleft", legend=colnames(X)[i],
+  #        col=c(1:3), 
+  #        pch=1,
+  #        #lty=1:2, 
+  #        cex=0.8)
+  
+  
+  axis(1, at = lim_x,
+       labels = NULL,
+       lwd = 2, 
+       cex.axis = 1, las = 2)
+  
+  axis(2, at = lim_y,
+       labels = NULL,
+       lwd = 2, 
+       cex.axis = 1, las = 2)
+  
+}
 
-plot(X[,i],Y[,j],
-     xlab = paste0("Methylation site: ",colnames(X)[i]),
-     ylab = paste0("Gene expression: ",colnames(Y)[j]))
 
-abline(lm(Y[,j]~X[,i]))
+plotting_function(main_name = bquote(xi[.(j)]),
+                  x_name = paste0("Methylation site: ",colnames(X)[i]),
+                  y_name = paste0("Gene expression: ",colnames(Y)[j]))
+
+points(X[,i],Y[,j],
+       col = 1, 
+       cex = 1, lwd = 1, pch = 1)
+
+
+abline(lm(Y[,j]~X[,i]), 
+       col = "red",  
+       lwd=3)
+
 
 text(X[,i],Y[,j],
      #labels=names(Xi1), 
      labels=1:length(X[,i]),
      cex= 1, pos=4)
 
+pdf("Univariate_plot_1.pdf") 
+
+plot(X[,i],Y[,j], 
+     main = bquote(hat(y[1]) == .(format(lm(Y[,j]~X[,i])$coef[2], digits=2)) ~ x[1] ),
+     col.main = "red",
+     xlab = paste0("Methylation site: ",colnames(X)[i]),
+     ylab = paste0("Gene expression: ",colnames(Y)[j]))
+
+abline(lm(Y[,j]~X[,i]), col = "red",  lwd=3)
+
+text(X[,i],Y[,j],
+     #labels=names(Xi1), 
+     labels=1:length(X[,i]),
+     cex= 1, pos=4)
+
+
+
+format(lm(Y[,j]~X[,i])$coef[2], digits=2)
+
 dev.off()
 
 
 pdf("Univariate_plot_3.pdf") 
 
-par(mfrow=c(3,4))
+par(mfrow=c(4,4))
 
-for(which_x in 1:24){
+for(which_x in 1:16){
   
   plot(X[,which_x],Y[,j],
+       main = bquote(hat(y[1]) == .(format(lm(Y[,j]~X[,which_x])$coef[2], digits=2)) ~ x[.(which_x)] ),
+       col.main = "red",
        xlab = colnames(X)[which_x],
        ylab = colnames(Y)[j])
   
-  abline(lm(Y[,j]~X[,which_x]) )
+  abline(lm(Y[,j]~X[,which_x]), col = "red",  lwd=3)
   
 }
+
 
 dev.off()
 
@@ -237,20 +304,23 @@ dev.off()
 
 pdf("multivariable_plot_2.pdf") 
 plot(Y_hat,Y[,j],
+     main = bquote(hat(y)[1] == .(format(lm(Y[,j]~X[,i])$coef[2], digits=2)) ~ x[1] ~ 
+                     .(format(lm(Y[,j]~X[,i])$coef[3], digits=2)) ~ x[2] ~ 
+                     .(format(lm(Y[,j]~X[,i])$coef[4], digits=2)) ~ x[3]  ),
+     col.main = "red",
      xlim = c(-2,2),
      ylim = c(-2,2),
-     xlab = "Cpg sites",
+     xlab = "Linear combination of Cpg sites",
      ylab = colnames(Y)[j])
 
 text(Y_hat,Y[,j],
      #labels=names(Xi1),
-     labels=names(Y[,j]),
+     labels=1:length((Y[,j])),
      cex= 1, pos=4)
 
-abline(Y_hat,Y[,j], lwd = 2)
+abline(Y_hat,Y[,j], lwd = 2, col = "red")
 
 dev.off()
-
 
 #Run 2 dataset msPLS #####
 
