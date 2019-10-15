@@ -186,11 +186,11 @@ format(lm(Y[,j]~X[,i])$coef[2], digits=2)
 dev.off()
 
 
-pdf("Univariate_plot_3.pdf") 
+pdf("Univariate_plot_2.pdf") 
 
-par(mfrow=c(4,4))
+par(mfrow=c(2,2))
 
-for(which_x in 1:16){
+for(which_x in 1:4){
   
   plot(X[,which_x],Y[,j],
        main = bquote(hat(y[1]) == .(format(lm(Y[,j]~X[,which_x])$coef[2], digits=2)) ~ x[.(which_x)] ),
