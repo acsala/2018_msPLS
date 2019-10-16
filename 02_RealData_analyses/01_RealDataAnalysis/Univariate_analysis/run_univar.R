@@ -202,7 +202,6 @@ for(which_x in 1:4){
   
 }
 
-
 dev.off()
 
 par(mfrow=c(1,1))
