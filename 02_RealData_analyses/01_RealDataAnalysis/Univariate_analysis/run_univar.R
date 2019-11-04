@@ -479,3 +479,296 @@ absBetas <- apply(Betas,2,abs)
 sum_abs <- apply(absBetas,2,sum)
 
 sum_abs[order(sum_abs,decreasing=T)][1:100]
+
+# take second LV set ####
+load("../datasetXYZ.RData")
+load("sCCA_res.RData")
+
+zeta1 <- s_satpls2$scores[,1]
+zeta2 <- s_satpls2$scores[,2]
+
+get_residuals <- function(Dataset, LV){
+  
+  # calculate the residuals
+  calcres = function(Xcol)
+    Xcol - solve(t(LV)%*%LV) %*% t(LV) %*% Xcol %*% t(LV)
+  
+  Res_data = apply(Dataset, 2, calcres)
+  
+  return(Res_data)
+  
+}
+
+Res_X <- get_residuals(X, zeta1)
+Res_Y <- get_residuals(Y, zeta2)
+
+data_sets <- cbind(Res_X,Res_Y)
+
+print(dim(data_sets))
+
+# path matrix
+METHYL = c(0,0)
+EXPRES = c(1,0)
+sat.inner = rbind(METHYL, EXPRES)
+
+# blocks of outer model
+sat.outer = list(1:dim(Res_X)[2], dim(Res_X)[2]+1:dim(Res_Y)[2])
+# define vector of reflective modes
+sat.mod = c("B","B")
+
+library(sPLSPM)
+
+time_data <- system.time(
+  s_satpls2_res <- splspm(data_sets, sat.inner, sat.outer, sat.mod, scheme="path",
+                      scaled=T, penalization = "ust", 
+                      nonzero = c(10,10), lambda = 1,
+                      cross_validate = F)
+)
+
+res1.outer_residual <- s_satpls2_res$outer_model[
+  which(s_satpls2_res$outer_model[,2] == "METHYL"),]
+res2.outer_residual <- s_satpls2_res$outer_model[
+  which(s_satpls2_res$outer_model[,2] == "EXPRES"),]
+
+res1.inner_residual <-  s_satpls2_res$crossloadings[
+  which(s_satpls2_res$crossloadings[,2]=="METHYL"),]
+res2.inner_residual <-  s_satpls2_res$crossloadings[
+  which(s_satpls2_res$crossloadings[,2]=="EXPRES"),]
+
+# Sum abs weights of Y with latent variable of X
+sum(abs(res2.inner_residual[,"EXPRES"]))
+# Sum abs correlation of latent variable X and the Y variables
+sum(abs(cor(s_satpls2_res$scores[,"EXPRES"],Y)))
+
+
+save(s_satpls2_res,time_data, file = "sCCA_secondLVs_results.RData")
+
+#plot 1st and 2nd components ####
+load("sCCA_res.RData")
+load("sCCA_secondLVs_results.RData")
+
+zeta1 <- s_satpls2$scores[,1]
+zeta2 <- s_satpls2$scores[,2]
+
+zeta1_residual_1 <- s_satpls2_res$scores[,1]
+zeta2_residual_1 <- s_satpls2_res$scores[,2]
+
+cor(zeta1, zeta1_residual_1)
+
+
+pdf("CCA_LV1_vsLV2_plot_1.pdf") 
+
+plot(1, 
+     type="n", 
+     xlab=paste0("First component scores (13%)"), 
+     ylab=paste0("Second component scores (61%)"), 
+     xlim=c(-3,3), 
+     ylim=c(-3,3), 
+     xaxt = "n",
+     yaxt = "n",
+     bty = "n")
+
+points(zeta1,zeta1_residual_1, 
+       col = 1, 
+       cex = 1, lwd = 1, pch = 1)
+
+
+# legend("topleft", legend=colnames(X)[i],
+#        col=c(1:3), 
+#        pch=1,
+#        #lty=1:2, 
+#        cex=0.8)
+
+# abline(lm(zeta1_residual_1~zeta1), 
+#        col = 1, lwd = 2)
+
+axis(1, at = -3:3,
+     labels = NULL,
+     lwd = 2, 
+     cex.axis = 1, las = 2)
+
+axis(2, at = -3:3,
+     labels = NULL,
+     lwd = 2, 
+     cex.axis = 1, las = 2)
+
+#label points
+
+pos_vector <- rep(3, length(zeta1))
+pos_vector[names(zeta1) %in% c("183")] <- 1
+
+text(zeta1, 
+     zeta1_residual_1, 
+     #labels=names(Xi1), 
+     labels=1:length(zeta1),
+     cex= 1, pos=pos_vector)
+
+dev.off()
+
+#plot first and second component loading dimensions ####
+
+plot_METHYL <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2] == "METHYL"),]
+plot_METHYL <- plot_METHYL[which(plot_METHYL[,"weight"]!=0),][,]
+plot_METHYL$loading
+
+plot_METHYL_resid1 <- s_satpls2_res$outer_model[
+  which(s_satpls2_res$outer_model[,2] == "METHYL"),]
+plot_METHYL_resid1 <- plot_METHYL_resid1[which(plot_METHYL_resid1[,"weight"]!=0),][,]
+plot_METHYL_resid1$loading
+
+plotting_LVs_n_scores <- function(X_plot, Y_plot,
+                                  X_lim, Y_lim,
+                                  X_text, Y_text){
+  
+  X_lim = c(min(X_lim)-sd(X_lim),
+            max(X_lim)+sd(X_lim))
+  Y_lim = c(min(Y_lim)-sd(Y_lim),
+            max(Y_lim)+sd(Y_lim))
+
+  plot(1, 
+       type="n", 
+       xlab=X_text, 
+       ylab=Y_text, 
+       xlim=X_lim, 
+       ylim=Y_lim, 
+       xaxt = "n",
+       yaxt = "n",
+       bty = "n",
+       lwd = 2)
+  
+  points(X_plot,Y_plot, 
+         col = 1, 
+         cex = 1, lwd = 1, pch = 1)
+  
+  
+  # legend("topleft", legend=colnames(X)[i],
+  #        col=c(1:3), 
+  #        pch=1,
+  #        #lty=1:2, 
+  #        cex=0.8)
+  
+  # abline(lm(zeta1_residual_1~zeta1), 
+  #        col = 1, lwd = 2)
+  
+  axis(1, 
+       at = format(seq(from = X_lim[1], to=X_lim[2], by = (X_lim[2]-X_lim[1])/5), 
+                      digits=2),
+       labels = NULL,
+       lwd = 2, 
+       cex.axis = 1, las = 2)
+  
+  axis(2, at = format(seq(from = Y_lim[1], to=Y_lim[2], by = (Y_lim[2]-Y_lim[1])/5), 
+                      digits=2),
+       labels = NULL,
+       lwd = 2, 
+       cex.axis = 1, las = 2)
+  
+}
+
+Methyl_weights_cor_1st <-
+  cor(X[,colnames(X) %in% plot_METHYL$name | 
+          colnames(X) %in% plot_METHYL_resid1$name],
+      s_satpls2$scores[,1])
+
+Methyl_weights_cor_2nd <-
+  cor(X[,colnames(X) %in% plot_METHYL$name | 
+          colnames(X) %in% plot_METHYL_resid1$name],
+      s_satpls2_res$scores[,1])
+
+cor(Methyl_weights_cor_1st, Methyl_weights_cor_2nd)
+
+pdf("CCA_METHYL_1st_2nd_component.pdf") 
+
+plotting_LVs_n_scores(Methyl_weights_cor_1st, Methyl_weights_cor_2nd,
+                      X_lim = range(Methyl_weights_cor_1st),
+                      Y_lim = range(Methyl_weights_cor_2nd),
+                      X_text = "1st component loadings on CpG sites",
+                      Y_text = "2nd component loadings on CpG sites"
+                      )
+
+
+text(Methyl_weights_cor_1st[
+  rownames(Methyl_weights_cor_1st) %in% plot_METHYL_resid1$name],
+     1.5,
+     #labels=names(Xi1),
+     labels=rownames(Methyl_weights_cor_1st)[
+         rownames(Methyl_weights_cor_1st) %in% plot_METHYL_resid1$name],
+     cex= 1,
+     srt = 90, 
+  col = 1)
+
+text(1.2,
+     Methyl_weights_cor_2nd[
+       rownames(Methyl_weights_cor_2nd) %in% plot_METHYL$name],
+  #labels=names(Xi1),
+  labels=rownames(Methyl_weights_cor_2nd)[
+    rownames(Methyl_weights_cor_2nd) %in% plot_METHYL$name],
+  cex= 1,
+  srt = 0, col = 1)
+
+dev.off()
+
+plot_EXPRESSION <- s_satpls2$outer_model[which(s_satpls2$outer_model[,2] == "EXPRES"),]
+plot_EXPRESSION <- plot_EXPRESSION[which(plot_EXPRESSION[,3]!=0),][,]
+plot_EXPRESSION$loading
+
+plot_EXPRESSION_resid1 <- s_satpls2_res$outer_model[
+  which(s_satpls2_res$outer_model[,2] == "EXPRES"),]
+plot_EXPRESSION_resid1 <- plot_EXPRESSION_resid1[which(plot_EXPRESSION_resid1[,3]!=0),][,]
+plot_EXPRESSION_resid1$loading
+
+Expr_weights_cor_1st <-
+  cor(Y[,colnames(Y) %in% plot_EXPRESSION$name | 
+          colnames(Y) %in% plot_EXPRESSION_resid1$name],
+      s_satpls2$scores[,1])
+
+Expr_weights_cor_2nd <-
+  cor(Y[,colnames(Y) %in% plot_EXPRESSION$name | 
+          colnames(Y) %in% plot_EXPRESSION_resid1$name],
+      s_satpls2_res$scores[,1])
+
+
+pdf("CCA_EXPR_1st_2nd_component.pdf") 
+
+plotting_LVs_n_scores(Expr_weights_cor_1st, Expr_weights_cor_2nd,
+                      X_lim = range(Expr_weights_cor_1st),
+                      Y_lim = range(Expr_weights_cor_2nd),
+                      X_text = "1st component loadings on Expressions",
+                      Y_text = "2nd component loadings on Expressions"
+)
+
+
+text(Expr_weights_cor_1st[
+  rownames(Expr_weights_cor_1st) %in% plot_EXPRESSION_resid1$name],
+  -1,
+  #labels=names(Xi1),
+  labels=rownames(Expr_weights_cor_1st)[
+    rownames(Expr_weights_cor_1st) %in% plot_EXPRESSION_resid1$name],
+  cex= 1,
+  srt = 90, 
+  col = "red")
+
+points(Expr_weights_cor_1st[
+  rownames(Expr_weights_cor_1st) %in% plot_EXPRESSION_resid1$name],
+  Expr_weights_cor_2nd[
+    rownames(Expr_weights_cor_1st) %in% plot_EXPRESSION_resid1$name], 
+       col = "red", 
+       cex = 1, lwd = 1, pch = 1)
+
+text(0,
+     Expr_weights_cor_2nd[
+       rownames(Expr_weights_cor_2nd) %in% plot_EXPRESSION$name],
+     #labels=names(Xi1),
+     labels=rownames(Expr_weights_cor_2nd)[
+       rownames(Expr_weights_cor_2nd) %in% plot_EXPRESSION$name],
+     cex= 1,
+     srt = 0, col = "blue")
+
+points(Expr_weights_cor_1st[
+  rownames(Expr_weights_cor_2nd) %in% plot_EXPRESSION$name],
+  Expr_weights_cor_2nd[
+    rownames(Expr_weights_cor_2nd) %in% plot_EXPRESSION$name], 
+  col = "blue", 
+  cex = 1, lwd = 1, pch = 1)
+
+dev.off()
