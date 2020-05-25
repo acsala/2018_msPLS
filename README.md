@@ -2,7 +2,7 @@
 
 For more details see [Csala, A., Zwinderman, A.H. & Hof, M.H. Multiset sparse partial least squares path modeling for high dimensional omics data analysis. BMC Bioinformatics 21, 9 (2020). https://doi.org/10.1186/s12859-019-3286-3](https://doi.org/10.1186/s12859-019-3286-3).
 
-Please run the R code in Example submap to reprudice the results in the manusript. For questions, comments or remarks about the code please contact A. Csala at a@csala.me.
+Please run the R code in Example submap to reprudice the results in the manusript. For questions, comments or remarks about the code please contact [a at csala.me].
 
 The code is based on PLS-PM as described in Esposito Vinzi and Russolillo, 2013; Sanchez, 2013.
 
