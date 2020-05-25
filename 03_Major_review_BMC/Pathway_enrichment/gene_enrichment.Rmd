@@ -128,7 +128,7 @@ Load in the newly downloaded GMT file
 #if you haven't automatically downloaded the gmt file set 
 #the path to the gmt file below.
 gmt_file <- dest_gmt_file
-gmt_file <- "H://00_ZSILIP/01_Projects/Project_06_msPLS/03_Major_review_BMC/Pathway_enrichment/data/Human_GOBP_AllPathways_no_GO_iea_August_01_2019_symbol.gmt.txt"
+#gmt_file <- "H://00_ZSILIP/01_Projects/Project_06_msPLS/03_Major_review_BMC/Pathway_enrichment/data/Human_GOBP_AllPathways_no_GO_iea_August_01_2019_symbol.gmt.txt"
 
 capture.output(
    genesets <- GSA.read.gmt(gmt_file),

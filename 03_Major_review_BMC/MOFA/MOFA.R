@@ -92,7 +92,7 @@ DataOptions
 
 
 ModelOptions <- getDefaultModelOptions(MOFAobject)
-ModelOptions$numFactors <- 25
+ModelOptions$numFactors <- 5
 ModelOptions
 
 
@@ -102,6 +102,8 @@ TrainOptions <- getDefaultTrainOptions()
 TrainOptions$DropFactorThreshold <- 0.02
 
 TrainOptions$seed <- 2017
+
+TrainOptions$maxiter <- 50
 
 TrainOptions
 
