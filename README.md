@@ -33,7 +33,7 @@ List of confiurations on which the code was tested:
 
 Reference:
 
-	-	Esposito Vinzi, V. and Russolillo, G. (2013). Partial least squares algorithms and methods. Wiley Interdisciplinary
-	-	Reviews: Computational Statistics, 5(1):1ñ19.
-	Sanchez, G. (2013). Pls path modeling with r. Berkeley: Trowchez Editions.
+ 	- Esposito Vinzi, V. and Russolillo, G. (2013). Partial least squares algorithms and methods. Wiley Interdisciplinary
+	- Reviews: Computational Statistics, 5(1) Sanchez, G. (2013). Pls path modeling with r. Berkeley: Trowchez Editions.
 
+[You can find sPLS-PM compatible with R version 4 at https://github.com/acsala/sPLSPM](https://github.com/acsala/sPLSPM)
