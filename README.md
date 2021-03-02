@@ -2,6 +2,8 @@
 
 For more details see [Csala, A., Zwinderman, A.H. & Hof, M.H. Multiset sparse partial least squares path modeling for high dimensional omics data analysis. BMC Bioinformatics 21, 9 (2020). https://doi.org/10.1186/s12859-019-3286-3](https://doi.org/10.1186/s12859-019-3286-3).
 
+[You can find sPLS-PM compatible with R version 4 at https://github.com/acsala/sPLSPM](https://github.com/acsala/sPLSPM)
+
 Please run the R code in Example submap to reprudice the results in the manusript. For questions, comments or remarks about the code please contact [a at csala.me].
 
 The code is based on PLS-PM as described in Esposito Vinzi and Russolillo, 2013; Sanchez, 2013.
@@ -36,4 +38,3 @@ Reference:
  	- Esposito Vinzi, V. and Russolillo, G. (2013). Partial least squares algorithms and methods. Wiley Interdisciplinary
 	- Reviews: Computational Statistics, 5(1) Sanchez, G. (2013). Pls path modeling with r. Berkeley: Trowchez Editions.
 
-[You can find sPLS-PM compatible with R version 4 at https://github.com/acsala/sPLSPM](https://github.com/acsala/sPLSPM)
