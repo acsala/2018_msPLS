@@ -1,8 +1,9 @@
 # Simulation studies for sparse partial least squares path modeling 
 
+[You can find sPLS-PM compatible with R version 4 at https://github.com/acsala/sPLSPM](https://github.com/acsala/sPLSPM)
+
 For more details see [Csala, A., Zwinderman, A.H. & Hof, M.H. Multiset sparse partial least squares path modeling for high dimensional omics data analysis. BMC Bioinformatics 21, 9 (2020). https://doi.org/10.1186/s12859-019-3286-3](https://doi.org/10.1186/s12859-019-3286-3).
 
-[You can find sPLS-PM compatible with R version 4 at https://github.com/acsala/sPLSPM](https://github.com/acsala/sPLSPM)
 
 Please run the R code in Example submap to reprudice the results in the manusript. For questions, comments or remarks about the code please contact [a at csala.me].
 
